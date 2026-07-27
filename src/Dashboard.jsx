@@ -23,6 +23,7 @@ export default function Dashboard({ session }) {
     showModal, setShowModal, editingTodoId,
     title, setTitle, description, setDescription, category, setCategory,
     priority, setPriority, due_date, setdue_date,
+    due_time, setDueTime, reference_link, setReferenceLink, checklist, setChecklist,
     file, setFile, existingFileUrl, uploading,
     handleOpenCreateModal, handleOpenEditModal, handleSaveTodo,
     updateStatus, deleteTodo,
@@ -156,6 +157,9 @@ export default function Dashboard({ session }) {
         categoriesList={categoriesList}
         priority={priority} setPriority={setPriority}
         due_date={due_date} setdue_date={setdue_date}
+        due_time={due_time} setDueTime={setDueTime}
+        reference_link={reference_link} setReferenceLink={setReferenceLink}
+        checklist={checklist} setChecklist={setChecklist}
         file={file} setFile={setFile}
         existingFileUrl={existingFileUrl}
         uploading={uploading}

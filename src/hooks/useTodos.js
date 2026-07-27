@@ -20,6 +20,9 @@ export function useTodos(session) {
   const [category, setCategory] = useState('General')
   const [priority, setPriority] = useState('Medium')
   const [due_date, setdue_date] = useState('')
+  const [due_time, setDueTime] = useState('')
+  const [reference_link, setReferenceLink] = useState('')
+  const [checklist, setChecklist] = useState([])
 
   // File Upload State
   const [file, setFile] = useState(null)
@@ -62,6 +65,9 @@ export function useTodos(session) {
     setCategory('General')
     setPriority('Medium')
     setdue_date('')
+    setDueTime('')
+    setReferenceLink('')
+    setChecklist([])
     setFile(null)
     setExistingFileUrl(null)
     setEditingTodoId(null)
@@ -79,6 +85,23 @@ export function useTodos(session) {
     setCategory(todo.category || todo.kategori || 'General')
     setPriority(todo.priority || todo.prioritas || 'Medium')
     setdue_date(todo.due_date || todo.duedate || '')
+    setDueTime(todo.due_time || '')
+    setReferenceLink(todo.reference_link || todo.link_referensi || '')
+
+    let initialChecklist = []
+    if (todo.checklist) {
+      if (typeof todo.checklist === 'string') {
+        try {
+          initialChecklist = JSON.parse(todo.checklist)
+        } catch {
+          initialChecklist = []
+        }
+      } else if (Array.isArray(todo.checklist)) {
+        initialChecklist = todo.checklist
+      }
+    }
+    setChecklist(initialChecklist)
+
     setExistingFileUrl(todo.file_url || todo.lampiran || null)
     setFile(null)
     setShowModal(true)
@@ -153,6 +176,9 @@ export function useTodos(session) {
           category,
           priority,
           due_date: due_date || null,
+          due_time: due_time || null,
+          reference_link: reference_link || null,
+          checklist: checklist || [],
           file_url: uploadedUrl,
         })
         .eq('id', editingTodoId)
@@ -168,6 +194,9 @@ export function useTodos(session) {
         status: 'Aktif',
         is_completed: false,
         due_date: due_date || null,
+        due_time: due_time || null,
+        reference_link: reference_link || null,
+        checklist: checklist || [],
         file_url: uploadedUrl,
       }
       const { error: insertError } = await supabase
@@ -267,6 +296,7 @@ export function useTodos(session) {
     showModal, setShowModal, editingTodoId,
     title, setTitle, description, setDescription, category, setCategory,
     priority, setPriority, due_date, setdue_date,
+    due_time, setDueTime, reference_link, setReferenceLink, checklist, setChecklist,
     file, setFile, existingFileUrl, uploading,
     handleOpenCreateModal, handleOpenEditModal, handleSaveTodo,
     // actions
