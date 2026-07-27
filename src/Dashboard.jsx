@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTodos } from './hooks/useTodos'
 import { useTodoFilters } from './hooks/useTodoFilters'
 import { getDateStats } from './utils/dateHelpers'
@@ -15,7 +15,6 @@ import TodoFormModal from './components/modals/TodoFormModal'
 import CategoryModal from './components/modals/CategoryModal'
 
 import CalendarWidget from './components/CalendarWidget'
-
 
 export default function Dashboard({ session }) {
   const {
@@ -42,17 +41,33 @@ export default function Dashboard({ session }) {
   const { totalTodos, completedTodos, activeTodos, progressPercent, categoryCounts } = getTodoStats(todos, categoriesList)
   const { overdueTodos, todayTasksCount } = getDateStats(todos)
 
-  // Dengarkan event global "todoapp:open-todo" (dipicu dari klik item di
-  // CalendarWidget/UpcomingDeadlines, termasuk dropdown notifikasi di Navbar)
-  // lalu langsung buka modal edit untuk tugas yang bersangkutan.
+  // Gunakan ref untuk menampung ID tugas pending agar aman dari cascading render warning
+  const pendingTodoIdRef = useRef(null)
+
+  // Efek tunggal: Tangkap event "todoapp:open-todo" & Buka modal begitu data todos siap
   useEffect(() => {
-    const handleOpenTodoEvent = (e) => {
-      const id = e.detail?.id
-      const targetTodo = todos.find(t => t.id === id)
+    const checkAndOpenPendingTodo = (idToOpen) => {
+      const targetId = idToOpen || pendingTodoIdRef.current
+      if (!targetId || !todos.length) return
+
+      const targetTodo = todos.find((t) => t.id === targetId)
       if (targetTodo) {
         handleOpenEditModal(targetTodo)
+        pendingTodoIdRef.current = null // Reset ref secara mulus
       }
     }
+
+    const handleOpenTodoEvent = (e) => {
+      const id = e.detail?.id
+      if (id) {
+        pendingTodoIdRef.current = id
+        checkAndOpenPendingTodo(id)
+      }
+    }
+
+    // Cek jika ada tugas pending yang belum dibuka saat todos diperbarui
+    checkAndOpenPendingTodo()
+
     window.addEventListener('todoapp:open-todo', handleOpenTodoEvent)
     return () => window.removeEventListener('todoapp:open-todo', handleOpenTodoEvent)
   }, [todos, handleOpenEditModal])

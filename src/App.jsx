@@ -6,6 +6,8 @@ import Dasboard from './Dashboard'
 import AdminPanel from './components/AdminPanel'
 import ProfilePage from './components/ProfilePage'
 import Navbar from './components/Navbar'
+import {CalendarPage}  from './components/CalendarPage'
+import {CategoriesPage} from './components/CategoriesPage'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -97,6 +99,8 @@ export default function App() {
       <main className="transition-all duration-300">
         {currentTab === 'admin' && <AdminPanel session={session} />}
         {currentTab === 'dashboard' && <Dasboard session={session} />}
+        {currentTab === 'calendar' && ( <CalendarPage session={session} setCurrentTab={setCurrentTab} />)}
+        {currentTab === 'categories' && (<CategoriesPage session={session} setCurrentTab={setCurrentTab} />)}
         {currentTab === 'profile' && <ProfilePage session={session} />}
       </main>
 

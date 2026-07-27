@@ -55,7 +55,7 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
     }, 50)
   }
 
-  // 1. TAMBAHKAN: Lacak status online pengguna ke Supabase Presence
+  // Lacak status online pengguna ke Supabase Presence
   useEffect(() => {
     if (!session?.user?.id) return
 
@@ -102,7 +102,7 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
   const nameInitial = profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'A'
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-[#1A1917]/95  border-b border-[#E4DFD3] dark:border-[#3A3733] px-4 sm:px-6 py-3 transition-colors duration-300">
+    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-[#1A1917]/95 border-b border-[#E4DFD3] dark:border-[#3A3733] px-4 sm:px-6 py-3 transition-colors duration-300">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Brand Logo & Mobile Toggle */}
@@ -132,6 +132,7 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
             </span>
           </div>
 
+          {/* TAB NAVIGASI DESKTOP */}
           <div className="hidden md:flex items-center gap-1 bg-slate-100/80 dark:bg-slate-900/80 p-1 rounded-md border border-[#E4DFD3] dark:border-[#3A3733]">
             <button
               onClick={() => setCurrentTab('dashboard')}
@@ -142,6 +143,30 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
               }`}
             >
               Dashboard
+            </button>
+
+            {/* BUTTON CATEGORIES DESKTOP */}
+            <button
+              onClick={() => setCurrentTab('categories')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                currentTab === 'categories'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              Categories
+            </button>
+
+            {/* BUTTON CALENDAR DESKTOP */}
+            <button
+              onClick={() => setCurrentTab('calendar')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                currentTab === 'calendar'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              Calendar
             </button>
 
             {profile?.role === 'admin' && (
@@ -201,7 +226,6 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center gap-2 p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/60 transition border border-transparent hover:border-[#E4DFD3] dark:hover:border-slate-700"
             >
-              {/* 2. TAMBAHKAN: Indikator Titik Hijau Online di Avatar Profile */}
               <div className="relative">
                 <div className="w-7 h-7 bg-[#20302A] text-[#C99A2E] font-serif rounded-md flex items-center justify-center text-sm">
                   {nameInitial}
@@ -272,6 +296,36 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
               }`}
             >
               Dashboard
+            </button>
+
+            {/* BUTTON CATEGORIES MOBILE */}
+            <button
+              onClick={() => {
+                setCurrentTab('categories')
+                setIsMobileMenuOpen(false)
+              }}
+              className={`w-full text-left px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                currentTab === 'categories'
+                  ? 'bg-[#2C4536] text-white'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              Categories
+            </button>
+
+            {/* BUTTON CALENDAR MOBILE */}
+            <button
+              onClick={() => {
+                setCurrentTab('calendar')
+                setIsMobileMenuOpen(false)
+              }}
+              className={`w-full text-left px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                currentTab === 'calendar'
+                  ? 'bg-[#2C4536] text-white'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              Calendar
             </button>
 
             {profile?.role === 'admin' && (
