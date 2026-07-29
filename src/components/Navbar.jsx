@@ -117,20 +117,27 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
             </svg>
           </button>
 
-          <div 
-            onClick={() => {
-              setCurrentTab('dashboard')
-              setIsMobileMenuOpen(false)
-            }} 
-            className="flex items-center gap-2.5 cursor-pointer group"
-          >
-            <div className="w-8 h-8 bg-[#20302A] rounded-md flex items-center justify-center text-[#C99A2E] font-serif text-lg group-hover:scale-105 transition-transform">
-              T
-            </div>
-            <span className="font-serif text-slate-900 dark:text-white text-base sm:text-lg tracking-tight">
-              TodoList <span className="font-mono text-[9px] sm:text-[10px] align-top px-1.5 py-0.5 rounded-sm bg-[#3D5F49]/10 text-[#3D5F49] dark:text-[#9CB4A5] font-bold border border-[#3D5F49]/20">PRO</span>
-            </span>
-          </div>
+         <div 
+  onClick={() => {
+    setCurrentTab('dashboard')
+    setIsMobileMenuOpen(false)
+  }} 
+  className="flex items-center gap-2.5 cursor-pointer group"
+>
+  <div className="w-8 h-8 bg-[#20302A] rounded-md flex items-center justify-center text-[#C99A2E] group-hover:scale-105 transition-transform">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+  <path d="M8 6h10" />
+  <path d="M8 12h10" />
+  <path d="M8 18h10" />
+  <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" />
+  <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" />
+  <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" />
+</svg>
+  </div>
+  <span className="font-serif text-slate-900 dark:text-white text-base sm:text-lg tracking-tight">
+    TugasKu
+  </span>
+</div>
 
           {/* TAB NAVIGASI DESKTOP */}
           <div className="hidden md:flex items-center gap-1 bg-slate-100/80 dark:bg-slate-900/80 p-1 rounded-md border border-[#E4DFD3] dark:border-[#3A3733]">
