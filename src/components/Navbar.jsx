@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import { getDateStats } from '../utils/dateHelpers'
 import UpcomingDeadlines from './UpcomingDeadlines'
-import logo from '../../public/logo.svg'
+import logo from '../assets/logo.svg'
 
 export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode, setIsDarkMode }) {
   const [profile, setProfile] = useState(null)
@@ -122,26 +122,23 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
               )}
             </svg>
           </button>
-{/* Logo & Brand Name */}
-<div 
-  onClick={() => {
-    setCurrentTab('dashboard')
-    setIsMobileMenuOpen(false)
-  }} 
-  className="flex items-center gap-3 cursor-pointer group"
->
-  <div className="relative -my-3 w-14 h-[72px] sm:w-16 sm:h-[88px] flex items-center justify-center">
-    <img 
-      src={logo} 
-      alt="TugasKu Logo" 
-      className="absolute w-[500px] h-full object-contain group-hover:scale-105 transition-transform"
-    />
-  </div>
-  
-</div>
-<span className="font-serif font-bold -ml-[30px] mr-[30px] text-slate-900 dark:text-white text-lg sm:text-xl tracking-tight">
-    TugasKu
-  </span>
+          {/* Logo & Brand Name */}
+          <div 
+            onClick={() => {
+              setCurrentTab('dashboard')
+              setIsMobileMenuOpen(false)
+            }} 
+            className="flex items-center gap-2.5 cursor-pointer group"
+          >
+            <img 
+              src={logo} 
+              alt="TugasKu Logo" 
+              className="w-9 h-9 sm:w-10 sm:h-10 object-contain group-hover:scale-105 transition-transform"
+            />
+            <span className="font-serif font-bold text-slate-900 dark:text-white text-lg sm:text-xl tracking-tight">
+              TugasKu
+            </span>
+          </div>
 
           {/* TAB NAVIGASI DESKTOP */}
           <div className="hidden md:flex items-center gap-1 bg-slate-100/80 dark:bg-slate-900/80 p-1 rounded-md border border-[#E4DFD3] dark:border-[#3A3733]">
