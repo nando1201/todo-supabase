@@ -1,16 +1,23 @@
+//category update 
 import { useState, useEffect, useCallback } from 'react'
-import { BookOpen, ArrowLeft } from 'lucide-react'
+import { BookOpen, ArrowLeft, Plus, FolderPlus } from 'lucide-react'
 import { supabase } from '../supabaseClient'
 import TodoFormModal from './modals/TodoFormModal'
-import TodoCard from './TodoCard' // Import komponen TodoCard kamu
+import CategoryModal from './modals/CategoryModal'
+import TodoCard from './TodoCard'
 
-export const CategoriesPage = ({ session }) => {
+export const CategoriesPage = ({ session, categoriesList: initialCategories = ['General', 'Kuliah', 'Pekerjaan', 'Pribadi'] }) => {
   const [todos, setTodos] = useState([])
-  const [categoriesList, setCategoriesList] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState(null)
 
-  // State Modal Edit / Buat (Menggunakan TodoFormModal)
+  // State Lokal untuk Daftar Kategori agar bisa di-update
+  const [categoriesList, setCategoriesList] = useState(initialCategories)
+
+  // State Modal Tambah Kategori
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+
+  // State Modal Edit / Buat Tugas
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingTodoId, setEditingTodoId] = useState(null)
   const [title, setTitle] = useState('')
@@ -21,12 +28,11 @@ export const CategoriesPage = ({ session }) => {
   const [file, setFile] = useState(null)
   const [existingFileUrl, setExistingFileUrl] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [newCategoryInput, setNewCategoryInput] = useState('')
 
-  // Fetch Todos & Categories dari Supabase
+  // Fetch Todos dari Supabase
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true)
-
       let todoQuery = supabase.from('todos').select('*').order('created_at', { ascending: false })
       if (session?.user?.id) {
         todoQuery = todoQuery.eq('user_id', session.user.id)
@@ -34,28 +40,18 @@ export const CategoriesPage = ({ session }) => {
       const { data: todoData, error: todoErr } = await todoQuery
       if (todoErr) throw todoErr
 
-      let catQuery = supabase.from('categories').select('*')
-      if (session?.user?.id) {
-        catQuery = catQuery.eq('user_id', session.user.id)
-      }
-      const { data: catData } = await catQuery
+      const loadedTodos = todoData || []
+      setTodos(loadedTodos)
 
-      setTodos(todoData || [])
+      // Ambil kategori unik yang tersimpan di database todos
+      const uniqueFromTodos = Array.from(
+        new Set(loadedTodos.map((t) => t.category || t.kategori).filter(Boolean))
+      )
 
-      if (catData && catData.length > 0) {
-        setCategoriesList(catData.map((c) => c.name))
-      } else {
-        const uniqueCategories = Array.from(new Set(todoData?.map((t) => t.category).filter(Boolean)))
-        setCategoriesList(
-          uniqueCategories.length > 0
-            ? uniqueCategories
-            : ['Algoritma & Struktur Data', 'Basis Data', 'Jaringan Komputer', 'Kecerdasan Buatan', 'Pemrograman Web 2']
-        )
-      }
+      // Gabungkan dengan categoriesList lokal agar kategori baru dari Supabase ikut muncul
+      setCategoriesList((prev) => Array.from(new Set([...prev, ...uniqueFromTodos])))
     } catch (err) {
       console.error('Error fetching categories page data:', err)
-    } finally {
-      setLoading(false)
     }
   }, [session])
 
@@ -63,46 +59,38 @@ export const CategoriesPage = ({ session }) => {
     let isMounted = true
 
     const loadInitialData = async () => {
-        try {
-        let todoQuery = supabase.from('todos').select('*').order('created_at', { ascending: false })
-        if (session?.user?.id) {
-            todoQuery = todoQuery.eq('user_id', session.user.id)
-        }
-        const { data: todoData, error: todoErr } = await todoQuery
-        if (todoErr) throw todoErr
-
-        let catQuery = supabase.from('categories').select('*')
-        if (session?.user?.id) {
-            catQuery = catQuery.eq('user_id', session.user.id)
-        }
-        const { data: catData } = await catQuery
-
-        if (isMounted) {
-            setTodos(todoData || [])
-            if (catData && catData.length > 0) {
-            setCategoriesList(catData.map((c) => c.name))
-            } else {
-            const uniqueCategories = Array.from(new Set(todoData?.map((t) => t.category).filter(Boolean)))
-            setCategoriesList(
-                uniqueCategories.length > 0
-                ? uniqueCategories
-                : ['Algoritma & Struktur Data', 'Basis Data', 'Jaringan Komputer', 'Kecerdasan Buatan', 'Pemrograman Web 2']
-            )
-            }
-        }
-        } catch (err) {
-        console.error('Error fetching categories page data:', err)
-        } finally {
-        if (isMounted) setLoading(false)
-        }
+      setLoading(true)
+      await fetchData()
+      if (isMounted) {
+        setLoading(false)
+      }
     }
 
     loadInitialData()
 
     return () => {
-        isMounted = false
+      isMounted = false
     }
-    }, [session])
+  }, [fetchData])
+
+  // Handler Tambah Kategori Baru ke State React
+  const handleCategorySubmit = (e) => {
+    e.preventDefault()
+    const trimmedCategory = newCategoryInput.trim()
+    if (!trimmedCategory) return
+
+    // PERBAIKAN: Gunakan setter fungsi state agar React re-render
+    setCategoriesList((prev) => {
+      if (!prev.includes(trimmedCategory)) {
+        return [...prev, trimmedCategory]
+      }
+      return prev
+    })
+
+    setNewCategoryInput('')
+    setShowCategoryModal(false)
+  }
+
   // Handler Toggle Status Selesai / Belum
   const handleToggleStatus = async (id, currentStatus) => {
     try {
@@ -133,6 +121,19 @@ export const CategoriesPage = ({ session }) => {
     }
   }
 
+  // Buka Modal Buat Tugas Baru
+  const handleOpenCreateModal = () => {
+    setEditingTodoId(null)
+    setTitle('')
+    setDescription('')
+    setCategory(selectedCategory || categoriesList[0] || '')
+    setPriority('Medium')
+    setdue_date('')
+    setFile(null)
+    setExistingFileUrl('')
+    setShowFormModal(true)
+  }
+
   // Handler Buka Edit Form
   const handleOpenEditModal = (todo) => {
     setEditingTodoId(todo.id)
@@ -143,11 +144,11 @@ export const CategoriesPage = ({ session }) => {
     setdue_date(todo.due_date || todo.duedate ? (todo.due_date || todo.duedate).split('T')[0] : '')
     setExistingFileUrl(todo.file_url || todo.lampiran || '')
     setFile(null)
-    
+
     setShowFormModal(true)
   }
 
-  // Close Modal Edit
+  // Close Modal Form Tugas
   const handleCloseFormModal = () => {
     setShowFormModal(false)
     setEditingTodoId(null)
@@ -157,7 +158,7 @@ export const CategoriesPage = ({ session }) => {
     setExistingFileUrl('')
   }
 
-  // Submit Form Edit ke Supabase
+  // Submit Form Tugas
   const handleSubmitForm = async (e) => {
     e.preventDefault()
     try {
@@ -188,20 +189,27 @@ export const CategoriesPage = ({ session }) => {
         category,
         priority,
         due_date: due_date || null,
-        file_url: uploadedFileUrl
+        file_url: uploadedFileUrl,
+        user_id: session?.user?.id || null,
       }
 
-      const { error } = await supabase
-        .from('todos')
-        .update(payload)
-        .eq('id', editingTodoId)
-
-      if (error) throw error
+      if (editingTodoId) {
+        const { error } = await supabase
+          .from('todos')
+          .update(payload)
+          .eq('id', editingTodoId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('todos')
+          .insert([payload])
+        if (error) throw error
+      }
 
       await fetchData()
       handleCloseFormModal()
     } catch (err) {
-      console.error('Gagal memperbarui tugas:', err)
+      console.error('Gagal menyimpan tugas:', err)
       alert('Terjadi kesalahan saat menyimpan tugas.')
     } finally {
       setUploading(false)
@@ -219,17 +227,27 @@ export const CategoriesPage = ({ session }) => {
     return colors[index % colors.length]
   }
 
+  const currentCategoryTodos = todos.filter((t) => (t.category || t.kategori) === selectedCategory)
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-      {/* ---------------- DETAIL TAMPILAN KATEGORI ---------------- */}
+      {/* DETAIL ROOM KATEGORI */}
       {selectedCategory ? (
         <>
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition"
-          >
-            <ArrowLeft size={18} /> Kembali ke Semua Kategori
-          </button>
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition"
+            >
+              <ArrowLeft size={18} /> Kembali ke Semua Kategori
+            </button>
+            <button
+              onClick={handleOpenCreateModal}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition"
+            >
+              <Plus size={16} /> Tambah Tugas di Kategori Ini
+            </button>
+          </div>
 
           <div className="bg-white dark:bg-[#211F1C] border border-[#E4DFD3] dark:border-[#3A3733] p-6 rounded-2xl shadow-sm flex items-center justify-between">
             <div>
@@ -238,38 +256,49 @@ export const CategoriesPage = ({ session }) => {
                 {selectedCategory}
               </h1>
               <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                Menampilkan {todos.filter((t) => (t.category || t.kategori) === selectedCategory).length} tugas dalam kategori ini
+                Menampilkan {currentCategoryTodos.length} tugas dalam kategori ini
               </p>
             </div>
           </div>
 
-          {todos.filter((t) => (t.category || t.kategori) === selectedCategory).length === 0 ? (
-            <div className="bg-white dark:bg-[#211F1C] border border-[#E4DFD3] dark:border-[#3A3733] p-12 rounded-2xl text-center text-slate-400">
-              <p>Belum ada tugas di kategori ini.</p>
+          {currentCategoryTodos.length === 0 ? (
+            <div className="bg-white dark:bg-[#211F1C] border border-[#E4DFD3] dark:border-[#3A3733] p-12 rounded-2xl text-center space-y-3">
+              <p className="text-slate-400">Belum ada tugas di kategori ini.</p>
+              <button
+                onClick={handleOpenCreateModal}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600/10 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white text-xs font-semibold rounded-xl transition"
+              >
+                <Plus size={16} /> Buat Tugas Pertama
+              </button>
             </div>
           ) : (
-            /* DAFTAR TUGAS MENGGUNAKAN TODOCARD (1 KOLOM ATAU GRID 2) */
             <div className="space-y-3">
-              {todos
-                .filter((t) => (t.category || t.kategori) === selectedCategory)
-                .map((todo) => (
-                  <TodoCard
-                    key={todo.id}
-                    todo={todo}
-                    onToggleStatus={handleToggleStatus}
-                    onEdit={handleOpenEditModal}
-                    onDelete={handleDeleteTodo}
-                  />
-                ))}
+              {currentCategoryTodos.map((todo) => (
+                <TodoCard
+                  key={todo.id}
+                  todo={todo}
+                  onToggleStatus={handleToggleStatus}
+                  onEdit={handleOpenEditModal}
+                  onDelete={handleDeleteTodo}
+                />
+              ))}
             </div>
           )}
         </>
       ) : (
-        /* ---------------- TAMPILAN UTAMA KATEGORI ---------------- */
+        /* TAMPILAN UTAMA DAFTAR KATEGORI */
         <>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Daftar Kategori</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Pilih kategori untuk melihat tugas di dalamnya</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Daftar Kategori</h1>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Pilih kategori untuk melihat tugas di dalamnya</p>
+            </div>
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#20302A] hover:bg-[#16241C] text-white dark:bg-amber-600 dark:hover:bg-amber-700 rounded-xl text-xs font-semibold transition"
+            >
+              <FolderPlus size={16} /> Tambah Kategori
+            </button>
           </div>
 
           {loading ? (
@@ -309,7 +338,16 @@ export const CategoriesPage = ({ session }) => {
         </>
       )}
 
-      {/* ---------------- FORM EDIT MODAL ---------------- */}
+      {/* MODAL TAMBAH KATEGORI */}
+      <CategoryModal
+        show={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        newCategoryInput={newCategoryInput}
+        setNewCategoryInput={setNewCategoryInput}
+        onSubmit={handleCategorySubmit}
+      />
+
+      {/* FORM TUGAS MODAL */}
       <TodoFormModal
         show={showFormModal}
         onClose={handleCloseFormModal}

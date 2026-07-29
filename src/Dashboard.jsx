@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTodos } from './hooks/useTodos'
 import { useTodoFilters } from './hooks/useTodoFilters'
 import { getDateStats } from './utils/dateHelpers'
@@ -15,8 +15,11 @@ import TodoFormModal from './components/modals/TodoFormModal'
 import CategoryModal from './components/modals/CategoryModal'
 
 import CalendarWidget from './components/CalendarWidget'
+import { supabase } from './supabaseClient'
 
 export default function Dashboard({ session }) {
+  const [userName, setUserName] = useState('')
+
   const {
     todos, loading, categoriesList,
     showCategoryModal, setShowCategoryModal, newCategoryInput, setNewCategoryInput, handleAddCategory,
@@ -54,7 +57,7 @@ export default function Dashboard({ session }) {
       const targetTodo = todos.find((t) => t.id === targetId)
       if (targetTodo) {
         handleOpenEditModal(targetTodo)
-        pendingTodoIdRef.current = null // Reset ref secara mulus
+        pendingTodoIdRef.current = null
       }
     }
 
@@ -66,19 +69,47 @@ export default function Dashboard({ session }) {
       }
     }
 
-    // Cek jika ada tugas pending yang belum dibuka saat todos diperbarui
     checkAndOpenPendingTodo()
 
     window.addEventListener('todoapp:open-todo', handleOpenTodoEvent)
     return () => window.removeEventListener('todoapp:open-todo', handleOpenTodoEvent)
   }, [todos, handleOpenEditModal])
 
+  // Ambil nama pengguna: prioritas ke tabel profiles, fallback ke user_metadata
+  useEffect(() => {
+    let mounted = true
+    const loadName = async () => {
+      if (!session?.user) return
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.user.id)
+          .single()
+
+        if (!error && data?.full_name) {
+          if (mounted) setUserName(data.full_name)
+          return
+        }
+      } catch (err) {
+        // ignore, lanjut ke fallback
+      }
+
+      const metaName = session.user.user_metadata?.full_name || session.user.user_metadata?.name
+      if (metaName && mounted) setUserName(metaName)
+    }
+
+    loadName()
+    return () => { mounted = false }
+  }, [session])
+
   return (
     <div className="min-h-screen bg-[#F5F3ED] dark:bg-[#1A1917] text-slate-900 dark:text-slate-100 pb-20 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 pt-8 space-y-8">
 
         <WelcomeHeader
-          userName={session.user.user_metadata?.full_name}
+          userName={userName}
           activeTodos={activeTodos}
           progressPercent={progressPercent}
           completedTodos={completedTodos}

@@ -1,37 +1,54 @@
-import { X, ExternalLink, Plus, Trash2 } from 'lucide-react';
+//todosformmodal.jsx
+import { X, ExternalLink, Plus, Trash2 } from 'lucide-react'
 
 export default function TodoFormModal({
-  show, onClose, editingTodoId,
-  title, setTitle, description, setDescription,
-  category, setCategory, categoriesList = [],
-  priority, setPriority,
-  due_date, setdue_date,
-  due_time, setDueTime,
-  reference_link, setReferenceLink,
-  checklist = [], setChecklist,
-  file, setFile, existingFileUrl, uploading,
-  onSubmit,
+  show,
+  onClose,
+  editingTodoId,
+  title,
+  setTitle,
+  description,
+  setDescription,
+  category,
+  setCategory,
+  categoriesList = [],
+  priority,
+  setPriority,
+  due_date,
+  setdue_date,
+  due_time,
+  setDueTime,
+  reference_link,
+  setReferenceLink,
+  checklist = [],
+  setChecklist,
+  file,
+  setFile,
+  existingFileUrl,
+  uploading,
+  onSubmit, // 👈 Memanggil handleSaveTodo dari useTodos
 }) {
-  if (!show) return null;
+  if (!show) return null
 
   // Handler Subtask / Checklist
   const handleAddChecklistItem = () => {
-    setChecklist([...checklist, { id: Date.now(), text: '', completed: false }]);
-  };
+    setChecklist([...checklist, { id: Date.now(), text: '', completed: false }])
+  }
 
   const handleChecklistChange = (id, text) => {
     setChecklist(
       checklist.map((item) => (item.id === id ? { ...item, text } : item))
-    );
-  };
+    )
+  }
 
   const handleRemoveChecklistItem = (id) => {
-    setChecklist(checklist.filter((item) => item.id !== id));
-  };
+    setChecklist(checklist.filter((item) => item.id !== id))
+  }
 
-  const safeCategories = Array.isArray(categoriesList) && categoriesList.length > 0 
-    ? categoriesList 
-    : ['General', 'Algoritma', 'Pemrograman Web', 'Basis Data'];
+  const safeCategories =
+    Array.isArray(categoriesList) && categoriesList.length > 0
+      ? categoriesList
+      : ['General', 'Kuliah', 'Pekerjaan', 'Pribadi']
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
@@ -40,19 +57,22 @@ export default function TodoFormModal({
           <h3 className="text-base font-bold text-slate-900 dark:text-white">
             {editingTodoId ? 'Edit Tugas' : 'Buat Tugas Baru'}
           </h3>
-          <button 
-            type="button" 
-            onClick={onClose} 
+          <button
+            type="button"
+            onClick={onClose}
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
           >
             <X size={20} />
           </button>
         </div>
 
+        {/* onSubmit di sini langsung menjalankan handleSaveTodo di useTodos */}
         <form onSubmit={onSubmit} className="space-y-4">
           {/* Judul Tugas */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Judul Tugas</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Judul Tugas
+            </label>
             <input
               type="text"
               required
@@ -65,7 +85,9 @@ export default function TodoFormModal({
 
           {/* Deskripsi */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Deskripsi</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Deskripsi
+            </label>
             <textarea
               rows="2"
               placeholder="Detail tambahan tugas..."
@@ -78,20 +100,26 @@ export default function TodoFormModal({
           {/* Kategori / Matkul & Prioritas */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Mata Kuliah / Kategori</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Kategori
+              </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg text-xs bg-[#F5F3ED] dark:bg-[#1A1917] border border-[#E4DFD3] dark:border-[#3A3733] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3D5F49] font-medium"
               >
                 {safeCategories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Prioritas</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Prioritas
+              </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
@@ -107,7 +135,9 @@ export default function TodoFormModal({
           {/* Tenggat Tanggal & Jam Deadline */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tanggal Tenggat</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Tanggal Tenggat
+              </label>
               <input
                 type="date"
                 value={due_date}
@@ -117,7 +147,9 @@ export default function TodoFormModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Jam Deadline</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Jam Deadline
+              </label>
               <input
                 type="time"
                 value={due_time || ''}
@@ -144,7 +176,9 @@ export default function TodoFormModal({
           {/* Check List / Subtask */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Check List Sub-Tugas</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Check List Sub-Tugas
+              </label>
               <button
                 type="button"
                 onClick={handleAddChecklistItem}
@@ -156,7 +190,9 @@ export default function TodoFormModal({
 
             <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
               {checklist.length === 0 && (
-                <p className="text-[11px] text-slate-400 italic">Belum ada poin checklist.</p>
+                <p className="text-[11px] text-slate-400 italic">
+                  Belum ada poin checklist.
+                </p>
               )}
               {checklist.map((item, index) => (
                 <div key={item.id || index} className="flex items-center gap-2">
@@ -164,7 +200,9 @@ export default function TodoFormModal({
                     type="text"
                     placeholder={`Poin ${index + 1}...`}
                     value={item.text}
-                    onChange={(e) => handleChecklistChange(item.id, e.target.value)}
+                    onChange={(e) =>
+                      handleChecklistChange(item.id, e.target.value)
+                    }
                     className="flex-1 px-3 py-1.5 rounded-md text-xs bg-[#F5F3ED] dark:bg-[#1A1917] border border-[#E4DFD3] dark:border-[#3A3733] text-slate-900 dark:text-white focus:outline-none"
                   />
                   <button
@@ -182,7 +220,9 @@ export default function TodoFormModal({
 
           {/* Upload File */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Lampiran (PDF / Gambar)</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Lampiran (PDF / Gambar)
+            </label>
             <input
               type="file"
               accept="image/*,application/pdf"
@@ -210,11 +250,15 @@ export default function TodoFormModal({
               disabled={uploading}
               className="px-5 py-2.5 rounded-lg text-xs font-bold bg-[#20302A] dark:bg-amber-600 dark:hover:bg-amber-700 text-white hover:bg-[#16241C] transition disabled:opacity-50"
             >
-              {uploading ? 'Mengunggah...' : editingTodoId ? 'Update Tugas' : 'Simpan Tugas'}
+              {uploading
+                ? 'Mengunggah...'
+                : editingTodoId
+                ? 'Update Tugas'
+                : 'Simpan Tugas'}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }

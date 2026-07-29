@@ -1,3 +1,11 @@
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour >= 4 && hour < 11) return 'Selamat pagi'
+  if (hour >= 11 && hour < 15) return 'Selamat siang'
+  if (hour >= 15 && hour < 18) return 'Selamat sore'
+  return 'Selamat malam'
+}
+
 export default function WelcomeHeader({ userName, activeTodos, progressPercent, completedTodos, totalTodos, onAddTodo }) {
   return (
     <div className="rounded-md bg-[#20302A] text-white p-8">
@@ -7,7 +15,7 @@ export default function WelcomeHeader({ userName, activeTodos, progressPercent, 
             {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
           </span>
           <h1 className="font-serif text-3xl md:text-4xl">
-            Selamat pagi, {userName || 'Fernando'}
+            {getGreeting()}, {userName || 'Pengguna'}
           </h1>
           <p className="text-[#C9D8CE] text-sm max-w-xl">
             Ada {activeTodos} tugas aktif hari ini. Ayo selesaikan satu per satu.
