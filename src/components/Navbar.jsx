@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import { getDateStats } from '../utils/dateHelpers'
 import UpcomingDeadlines from './UpcomingDeadlines'
+import logo from '../assets/logo1.svg'
 
 export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode, setIsDarkMode }) {
   const [profile, setProfile] = useState(null)
@@ -107,37 +108,40 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
         
         {/* Brand Logo & Mobile Toggle */}
         <div className="flex items-center gap-4 sm:gap-8">
+          {/* Mobile Hamburger Toggle */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             aria-label="Toggle Menu"
           >
-            <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              {isMobileMenuOpen ? <path d="M4 4l12 12M16 4L4 16" /> : <path d="M3 5h14M3 10h14M3 15h14" />}
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              )}
             </svg>
           </button>
 
-         <div 
-  onClick={() => {
-    setCurrentTab('dashboard')
-    setIsMobileMenuOpen(false)
-  }} 
-  className="flex items-center gap-2.5 cursor-pointer group"
->
-  <div className="w-8 h-8 bg-[#20302A] rounded-md flex items-center justify-center text-[#C99A2E] group-hover:scale-105 transition-transform">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-  <path d="M8 6h10" />
-  <path d="M8 12h10" />
-  <path d="M8 18h10" />
-  <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" />
-  <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" />
-  <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" />
-</svg>
-  </div>
-  <span className="font-serif text-slate-900 dark:text-white text-base sm:text-lg tracking-tight">
-    TugasKu
-  </span>
-</div>
+          {/* Logo & Brand Name */}
+          <div 
+            onClick={() => {
+              setCurrentTab('dashboard')
+              setIsMobileMenuOpen(false)
+            }} 
+            className="flex items-center gap-3 cursor-pointer group"
+          >
+            <img 
+              src={logo} 
+              alt="TugasKu Logo" 
+              width={136}
+              height={106}
+              className="w-9 h-9 sm:w-15 sm:h-15 object-contain group-hover:scale-105 transition-transform"
+            />
+            <span className="font-serif font-bold text-slate-900 dark:text-white text-lg sm:text-xl tracking-tight">
+              TugasKu
+            </span>
+          </div>
 
           {/* TAB NAVIGASI DESKTOP */}
           <div className="hidden md:flex items-center gap-1 bg-slate-100/80 dark:bg-slate-900/80 p-1 rounded-md border border-[#E4DFD3] dark:border-[#3A3733]">
