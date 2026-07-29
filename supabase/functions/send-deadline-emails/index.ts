@@ -1,34 +1,43 @@
 /// <reference lib="deno.window" />
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { Resend } from 'https://esm.sh/resend'
+import nodemailer from 'https://esm.sh/nodemailer@6.9.10'
 
-// 1. Ambil Secrets
-const resendApiKey = Deno.env.get('RESEND_API_KEY')
+const gmailUser = Deno.env.get('GMAIL_USER')
+const gmailAppPass = Deno.env.get('GMAIL_APP_PASS')
 const supabaseUrl = Deno.env.get('SUPABASE_URL')
-// 💡 Gunakan SERVICE_ROLE_KEY untuk bypass RLS (Supabase otomatis menyediakan ini di Edge Functions)
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
 Deno.serve(async (_req: Request) => {
   try {
-    if (!resendApiKey) {
+    if (!gmailUser || !gmailAppPass || !supabaseServiceKey) {
       return new Response(
-        JSON.stringify({ error: 'RESEND_API_KEY belum terpasang di Secrets!' }), 
+        JSON.stringify({ error: 'Secrets (GMAIL_USER / GMAIL_APP_PASS / SERVICE_ROLE_KEY) belum dipasang di Supabase!' }), 
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
-    // Client Admin (Bypass RLS)
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!)
-    const resend = new Resend(resendApiKey)
 
-    // Tanggal Hari Ini (Format: YYYY-MM-DD)
-    const today = new Date().toISOString().split('T')[0]
+    // Setup Server Transporter Gmail
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: gmailUser,
+        pass: gmailAppPass,
+      },
+    })
 
-    // 2. Ambil data todos bertanggal hari ini & is_completed = false
+    // Rentang Tanggal Hari Ini (00:00:00 - 23:59:59 lokal)
+    const now = new Date()
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString()
+
+    // 1. Ambil data todos bertanggal hari ini & belum selesai
     const { data: upcomingTodos, error: dbError } = await supabase
       .from('todos')
       .select('id, title, due_date, user_id')
-      .eq('due_date', today)
+      .gte('due_date', startOfDay)
+      .lte('due_date', endOfDay)
       .eq('is_completed', false)
 
     if (dbError) throw dbError
@@ -37,54 +46,47 @@ Deno.serve(async (_req: Request) => {
     const failed = []
 
     if (upcomingTodos && upcomingTodos.length > 0) {
-      // Ambil user_id unik
-      const userIds = [...new Set(upcomingTodos.map(t => t.user_id))]
-      
-      // Ambil email dari tabel profiles
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .in('id', userIds)
+      // 2. Ambil seluruh data user dari auth.users
+      const { data: { users }, error: authError } = await supabase.auth.admin.listUsers()
+      if (authError) throw authError
 
-      if (profileError) console.error('Profile Error:', profileError)
+      const userMap = new Map(users.map(u => [u.id, u.email]))
 
-      const profileMap = new Map(profiles?.map(p => [p.id, p.email]))
-
-      // 3. Loop & Kirim Email
+      // 3. Loop & Kirim ke email masing-masing pemilik tugas
       for (const todo of upcomingTodos) {
-        const userEmail = profileMap.get(todo.user_id)
+        const targetEmail = userMap.get(todo.user_id)
 
-        if (userEmail) {
+        if (targetEmail) {
           try {
-            await resend.emails.send({
-              from: 'TodoApp <onboarding@resend.dev>',
-              to: userEmail,
+            await transporter.sendMail({
+              from: `"TugasKu" <${gmailUser}>`,
+              to: targetEmail, // Email user masing-masing
               subject: `⏰ Pengingat: Tugas "${todo.title || 'Tugas Kamu'}" tenggat waktu hari ini!`,
               html: `
-                <div style="font-family: sans-serif; padding: 20px;">
+                <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
                   <h2>Halo!</h2>
-                  <p>Tugas kamu <strong>${todo.title || 'Tugas Tanpa Judul'}</strong> memiliki tenggat waktu hari ini (${todo.due_date}).</p>
-                  <p>Jangan lupa untuk segera menyelesaikannya ya!</p>
+                  <p>Tugas kamu <strong>"${todo.title || 'Tanpa Judul'}"</strong> memiliki tenggat waktu hari ini.</p>
+                  <p>Jangan lupa untuk segera menyelesaikannya di TugasKu ya!</p>
                 </div>
               `,
             })
-            sent.push({ id: todo.id, email: userEmail })
-          } catch (sendError) {
-            failed.push({ id: todo.id, email: userEmail, reason: String(sendError) })
+
+            sent.push({ id: todo.id, email: targetEmail })
+          } catch (sendErr) {
+            failed.push({ id: todo.id, email: targetEmail, reason: String(sendErr) })
           }
         } else {
-          failed.push({ id: todo.id, email: null, reason: 'Email tidak ditemukan di tabel profiles' })
+          failed.push({ id: todo.id, email: null, reason: 'Email user tidak ditemukan' })
         }
       }
     }
 
     return new Response(
       JSON.stringify({ 
-        message: 'Proses selesai', 
-        today, 
-        total: upcomingTodos?.length || 0, 
-        sent, 
-        failed 
+        message: 'Proses kirim email pengingat via Gmail sukses!', 
+        total_tugas_hari_ini: upcomingTodos?.length || 0, 
+        terkirim: sent, 
+        gagal: failed 
       }), 
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     )
