@@ -1,4 +1,3 @@
-//category update 
 import { useState, useEffect, useCallback } from 'react'
 import { BookOpen, ArrowLeft, Plus, FolderPlus } from 'lucide-react'
 import { supabase } from '../supabaseClient'
@@ -11,13 +10,14 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState(null)
 
-  // State Lokal untuk Daftar Kategori agar bisa di-update
+  // State Lokal untuk Daftar Kategori
   const [categoriesList, setCategoriesList] = useState(initialCategories)
 
   // State Modal Tambah Kategori
   const [showCategoryModal, setShowCategoryModal] = useState(false)
+  const [newCategoryInput, setNewCategoryInput] = useState('')
 
-  // State Modal Edit / Buat Tugas
+  // State Modal Form Tugas
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingTodoId, setEditingTodoId] = useState(null)
   const [title, setTitle] = useState('')
@@ -25,10 +25,12 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
   const [category, setCategory] = useState('')
   const [priority, setPriority] = useState('Medium')
   const [due_date, setdue_date] = useState('')
+  const [due_time, setDueTime] = useState('') // State Jam Deadline
+  const [reference_link, setReferenceLink] = useState('')
+  const [checklist, setChecklist] = useState([])
   const [file, setFile] = useState(null)
   const [existingFileUrl, setExistingFileUrl] = useState('')
   const [uploading, setUploading] = useState(false)
-  const [newCategoryInput, setNewCategoryInput] = useState('')
 
   // Fetch Todos dari Supabase
   const fetchData = useCallback(async () => {
@@ -43,13 +45,19 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
       const loadedTodos = todoData || []
       setTodos(loadedTodos)
 
-      // Ambil kategori unik yang tersimpan di database todos
+      // Ambil kategori unik yang tersimpan di database
       const uniqueFromTodos = Array.from(
         new Set(loadedTodos.map((t) => t.category || t.kategori).filter(Boolean))
       )
 
-      // Gabungkan dengan categoriesList lokal agar kategori baru dari Supabase ikut muncul
-      setCategoriesList((prev) => Array.from(new Set([...prev, ...uniqueFromTodos])))
+      // PERBAIKAN: Hanya update categoriesList jika ada kategori baru dari DB untuk mencegah re-render yang tidak perlu
+      setCategoriesList((prev) => {
+        const combined = Array.from(new Set([...prev, ...uniqueFromTodos]))
+        if (combined.length === prev.length && combined.every((val, index) => val === prev[index])) {
+          return prev
+        }
+        return combined
+      })
     } catch (err) {
       console.error('Error fetching categories page data:', err)
     }
@@ -58,7 +66,6 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
   useEffect(() => {
     let isMounted = true
 
-    // Memuat data awal (todos & kategori) saat komponen pertama kali dimount
     const loadInitialData = async () => {
       setLoading(true)
       await fetchData()
@@ -74,13 +81,12 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
     }
   }, [fetchData])
 
-  // Handler Tambah Kategori Baru ke State React
+  // Handler Tambah Kategori Baru
   const handleCategorySubmit = (e) => {
     e.preventDefault()
     const trimmedCategory = newCategoryInput.trim()
     if (!trimmedCategory) return
 
-    // PERBAIKAN: Gunakan setter fungsi state agar React re-render
     setCategoriesList((prev) => {
       if (!prev.includes(trimmedCategory)) {
         return [...prev, trimmedCategory]
@@ -122,14 +128,17 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
     }
   }
 
-  // Buka Modal Buat Tugas Baru
+  // Buka Modal Buat Tugas Baru (RESET STATE SEKALI DI AWAL)
   const handleOpenCreateModal = () => {
     setEditingTodoId(null)
     setTitle('')
     setDescription('')
-    setCategory(selectedCategory || categoriesList[0] || '')
+    setCategory(selectedCategory || categoriesList[0] || 'General')
     setPriority('Medium')
     setdue_date('')
+    setDueTime('')
+    setReferenceLink('')
+    setChecklist([])
     setFile(null)
     setExistingFileUrl('')
     setShowFormModal(true)
@@ -140,9 +149,12 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
     setEditingTodoId(todo.id)
     setTitle(todo.title || todo.judul || '')
     setDescription(todo.description || todo.deskripsi || '')
-    setCategory(todo.category || todo.kategori || selectedCategory || (categoriesList[0] || ''))
+    setCategory(todo.category || todo.kategori || selectedCategory || (categoriesList[0] || 'General'))
     setPriority(todo.priority || todo.prioritas || 'Medium')
     setdue_date(todo.due_date || todo.duedate ? (todo.due_date || todo.duedate).split('T')[0] : '')
+    setDueTime(todo.due_time || todo.jam || '')
+    setReferenceLink(todo.reference_link || todo.link || '')
+    setChecklist(todo.checklist || [])
     setExistingFileUrl(todo.file_url || todo.lampiran || '')
     setFile(null)
 
@@ -152,11 +164,6 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
   // Close Modal Form Tugas
   const handleCloseFormModal = () => {
     setShowFormModal(false)
-    setEditingTodoId(null)
-    setTitle('')
-    setDescription('')
-    setFile(null)
-    setExistingFileUrl('')
   }
 
   // Submit Form Tugas
@@ -190,6 +197,9 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
         category,
         priority,
         due_date: due_date || null,
+        due_time: due_time || null,
+        reference_link: reference_link || null,
+        checklist,
         file_url: uploadedFileUrl,
         user_id: session?.user?.id || null,
       }
@@ -217,7 +227,6 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
     }
   }
 
-  // Menentukan skema warna kartu kategori berdasarkan indeks urutan
   const getCategoryColor = (index) => {
     const colors = [
       { bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-400' },
@@ -365,6 +374,12 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
         setPriority={setPriority}
         due_date={due_date}
         setdue_date={setdue_date}
+        due_time={due_time}
+        setDueTime={setDueTime}
+        reference_link={reference_link}
+        setReferenceLink={setReferenceLink}
+        checklist={checklist}
+        setChecklist={setChecklist}
         file={file}
         setFile={setFile}
         existingFileUrl={existingFileUrl}
