@@ -58,6 +58,7 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
   useEffect(() => {
     let isMounted = true
 
+    // Memuat data awal (todos & kategori) saat komponen pertama kali dimount
     const loadInitialData = async () => {
       setLoading(true)
       await fetchData()
@@ -216,6 +217,7 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
     }
   }
 
+  // Menentukan skema warna kartu kategori berdasarkan indeks urutan
   const getCategoryColor = (index) => {
     const colors = [
       { bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-400' },

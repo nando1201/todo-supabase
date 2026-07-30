@@ -1,4 +1,3 @@
 @import "tailwindcss";
 
-/* 💡 Tambahkan baris ini untuk memberitahu Tailwind v4 agar menggunakan selector .dark */
 @custom-variant dark (&:where(.dark, .dark *));

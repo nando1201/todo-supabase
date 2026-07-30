@@ -5,14 +5,26 @@ export const MONTH_NAMES_ID = [
 ]
 export const DAY_LABELS_ID = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
 
+/**
+ * Memformat tahun, bulan (index 0-11), dan tanggal menjadi string "YYYY-MM-DD".
+ * Dipakai secara internal oleh buildMonthMatrix untuk membuat `dateStr` tiap cell.
+ */
 function formatDateStr(year, month, day) {
   const m = String(month + 1).padStart(2, '0')
   const d = String(day).padStart(2, '0')
   return `${year}-${m}-${d}`
 }
 
-// Bangun matrix minggu (array of weeks, tiap week berisi 7 cell) untuk 1 bulan.
-// Cell di luar bulan berjalan ditandai inMonth: false (buat efek redup/hatch di UI).
+/**
+ * Membangun matriks (array minggu x hari) untuk tampilan kalender satu bulan.
+ * - Menghitung hari pertama bulan berjalan jatuh di kolom (weekday) keberapa,
+ *   dengan Senin sebagai awal minggu (bukan Minggu).
+ * - Menambahkan cell "pengisi" dari akhir bulan sebelumnya di awal grid,
+ *   dan cell dari awal bulan berikutnya di akhir grid, supaya total cell
+ *   selalu kelipatan 7 (rapi per baris minggu).
+ * - Cell di luar bulan berjalan ditandai `inMonth: false` (buat efek redup/hatch di UI).
+ * - Mengembalikan array of weeks, tiap week berisi 7 cell.
+ */
 export function buildMonthMatrix(year, month) {
   const firstDay = new Date(year, month, 1)
   const startWeekday = (firstDay.getDay() + 6) % 7 // ubah Minggu=0 jadi Senin=0
@@ -45,7 +57,12 @@ export function buildMonthMatrix(year, month) {
   return weeks
 }
 
-// Kelompokkan todos berdasarkan due_date (format YYYY-MM-DD) -> { '2026-07-15': [todo, todo], ... }
+/**
+ * Mengelompokkan daftar todos berdasarkan tanggal jatuh temponya (due_date).
+ * Hasilnya berupa object dengan key tanggal format "YYYY-MM-DD" dan value
+ * berupa array todo yang jatuh tempo di tanggal tersebut.
+ * Contoh hasil: { '2026-07-15': [todo, todo], '2026-07-16': [todo], ... }
+ */
 export function groupTodosByDate(todos) {
   const map = {}
   todos.forEach(t => {

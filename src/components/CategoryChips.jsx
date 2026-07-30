@@ -1,3 +1,4 @@
+// Komponen tombol filter kategori (chips) di halaman dashboard
 export default function CategoryChips({ categoriesList, categoryFilter, setCategoryFilter, categoryCounts, totalTodos, onOpenCategoryModal }) {
   return (
     <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">

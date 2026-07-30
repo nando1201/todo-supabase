@@ -1,6 +1,7 @@
 import TodoCard from './TodoCard'
 import Pagination from './Pagination'
 
+// Komponen daftar tugas beserta pagination
 export default function TodoList({
   loading,
   currentTodos,

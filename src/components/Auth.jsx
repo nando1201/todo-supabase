@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 
+// Komponen halaman Login & Registrasi (email/password serta login Google)
 export default function Auth({ session }) {
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
@@ -9,7 +10,6 @@ export default function Auth({ session }) {
   const [showPassword, setShowPassword] = useState(false)
   const [isSignUp, setIsSignUp] = useState(false)
 
-  // 💡 JIKA SUDAH ADA SESI: Bersihkan riwayat URL agar tombol back tidak balik ke login
   useEffect(() => {
     if (session) {
       window.history.replaceState(null, '', window.location.pathname)

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 
+// Komponen halaman Profil: update data diri, ubah kata sandi, dan hapus akun
 export default function ProfilePage({ session }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -27,6 +28,7 @@ export default function ProfilePage({ session }) {
   }
 }, [session])
 
+  // Menyimpan perubahan nama profil pengguna ke Supabase
   const handleUpdateProfile = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -42,6 +44,7 @@ export default function ProfilePage({ session }) {
     setLoading(false)
   }
 
+  // Mengubah kata sandi akun pengguna melalui Supabase Auth
   const handleUpdatePassword = async (e) => {
     e.preventDefault()
     if (newPassword !== confirmPassword) {
@@ -62,6 +65,7 @@ export default function ProfilePage({ session }) {
     setLoading(false)
   }
 
+  // Menghapus akun pengguna secara permanen
   const handleDeleteAccount = async (e) => {
     if (e && e.preventDefault) e.preventDefault()
 

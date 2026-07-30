@@ -1,3 +1,4 @@
+// Menentukan ucapan salam berdasarkan jam saat ini (pagi/siang/sore/malam)
 function getGreeting() {
   const hour = new Date().getHours()
   if (hour >= 4 && hour < 11) return 'Selamat pagi'
@@ -6,6 +7,7 @@ function getGreeting() {
   return 'Selamat malam'
 }
 
+// Komponen header sambutan di dashboard beserta progress bar harian
 export default function WelcomeHeader({ userName, activeTodos, progressPercent, completedTodos, totalTodos, onAddTodo }) {
   return (
     <div className="rounded-md bg-[#20302A] text-white p-8">

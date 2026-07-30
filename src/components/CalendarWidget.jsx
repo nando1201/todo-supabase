@@ -6,6 +6,7 @@ import { supabase } from '../supabaseClient'
 import TodoDetailModal from './TodoDetailModal'
 import TodoFormModal from './modals/TodoFormModal'
 
+// Komponen widget kalender kecil untuk menampilkan tugas per tanggal di dashboard
 export default function CalendarWidget({ todos, categoriesList = [], session, onRefresh }) {
   // 1. State Modal Detail
   const [selectedTodo, setSelectedTodo] = useState(null)
@@ -73,6 +74,7 @@ export default function CalendarWidget({ todos, categoriesList = [], session, on
     setShowFormModal(true)
   }
 
+  // Menutup modal form tugas dan mereset semua state form
   const handleCloseFormModal = () => {
     setShowFormModal(false)
     setEditingTodoId(null)

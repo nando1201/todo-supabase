@@ -1,3 +1,4 @@
+// Komponen navigasi halaman (pagination) untuk daftar tugas
 export default function Pagination({ currentPage, totalPages, setCurrentPage }) {
   if (totalPages <= 1) return null
 

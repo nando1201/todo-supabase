@@ -17,9 +17,21 @@ import CategoryModal from './components/modals/CategoryModal'
 import CalendarWidget from './components/CalendarWidget'
 import { supabase } from './supabaseClient'
 
+/**
+ * Komponen halaman Dashboard.
+ * Menampilkan ringkasan tugas (todos) milik user yang sedang login, meliputi:
+ * - Header sambutan + statistik singkat
+ * - Daftar kategori tugas
+ * - Panel pencarian & filter
+ * - Daftar tugas (dengan pagination)
+ * - Widget produktivitas, kalender, dan aktivitas terbaru
+ * - Modal tambah/edit tugas dan tambah kategori
+ */
 export default function Dashboard({ session }) {
+  // Nama user yang ditampilkan di header (diambil dari profil atau metadata akun)
   const [userName, setUserName] = useState('')
 
+  // Custom hook: mengelola seluruh data & aksi CRUD terhadap todos (ambil, tambah, edit, hapus, dsb)
   const {
     todos, loading, categoriesList,
     showCategoryModal, setShowCategoryModal, newCategoryInput, setNewCategoryInput, handleAddCategory,
@@ -32,6 +44,7 @@ export default function Dashboard({ session }) {
     updateStatus, deleteTodo,
   } = useTodos(session)
 
+  // Custom hook: mengelola state pencarian, filter (status/kategori/prioritas), dan pagination
   const {
     searchTerm, setSearchTerm,
     statusFilter, setStatusFilter,
@@ -42,13 +55,26 @@ export default function Dashboard({ session }) {
     resetFilters,
   } = useTodoFilters(todos)
 
+  // Menghitung statistik ringkas dari daftar todos (total, selesai, aktif, progress, per kategori)
   const { totalTodos, completedTodos, activeTodos, progressPercent, categoryCounts } = getTodoStats(todos, categoriesList)
+  // Menghitung statistik berbasis tanggal (tugas terlambat & tugas hari ini)
   const { overdueTodos, todayTasksCount } = getDateStats(todos)
 
-  // Gunakan ref untuk menampung ID tugas pending agar aman dari cascading render warning
+  // Ref untuk menyimpan ID todo yang "menunggu" untuk dibuka modalnya
+  // (dipakai saat notifikasi/link eksternal ingin langsung membuka todo tertentu,
+  // tapi data todos belum selesai dimuat)
   const pendingTodoIdRef = useRef(null)
 
-  // Efek tunggal: Tangkap event "todoapp:open-todo" & Buka modal begitu data todos siap
+  /**
+   * Effect: Menangani permintaan "buka todo tertentu" dari luar komponen
+   * (via custom event 'todoapp:open-todo', misalnya dari notifikasi).
+   * - checkAndOpenPendingTodo: mengecek apakah todo dengan ID yang diminta
+   *   sudah tersedia di state `todos`, jika ya maka modal edit langsung dibuka.
+   * - handleOpenTodoEvent: listener yang menangkap event dan menyimpan ID
+   *   yang diminta ke pendingTodoIdRef, lalu mencoba membukanya.
+   * - Effect ini juga otomatis mencoba membuka pending todo setiap kali
+   *   `todos` berubah (misalnya setelah data selesai di-fetch).
+   */
   useEffect(() => {
     const checkAndOpenPendingTodo = (idToOpen) => {
       const targetId = idToOpen || pendingTodoIdRef.current
@@ -75,7 +101,13 @@ export default function Dashboard({ session }) {
     return () => window.removeEventListener('todoapp:open-todo', handleOpenTodoEvent)
   }, [todos, handleOpenEditModal])
 
-  // Ambil nama pengguna: prioritas ke tabel profiles, fallback ke user_metadata
+  /**
+   * Effect: Mengambil nama tampilan (display name) user yang sedang login.
+   * - loadName: pertama coba ambil `full_name` dari tabel `profiles` di Supabase.
+   *   Jika gagal/kosong, fallback ke `user_metadata.full_name` atau `user_metadata.name`
+   *   yang tersimpan di akun auth Supabase.
+   * - `mounted` dipakai untuk mencegah pemanggilan setState setelah komponen unmount.
+   */
   useEffect(() => {
     let mounted = true
     const loadName = async () => {
@@ -92,8 +124,8 @@ export default function Dashboard({ session }) {
           if (mounted) setUserName(data.full_name)
           return
         }
-      } catch (err) {
-        // ignore, lanjut ke fallback
+      } catch {
+       // do nothing
       }
 
       const metaName = session.user.user_metadata?.full_name || session.user.user_metadata?.name

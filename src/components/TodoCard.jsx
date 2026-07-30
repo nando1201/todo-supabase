@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import TodoDetailModal from './TodoDetailModal'
 
+// Komponen kartu tampilan satu tugas beserta aksi (edit, hapus, toggle status, detail)
 export default function TodoCard({ 
   todo, 
   onToggleStatus, 
@@ -27,6 +28,7 @@ export default function TodoCard({
 
   const isDone = todo.status === 'Selesai' || todo.is_completed
 
+  // Membuka modal detail tugas
   const handleOpenDetail = () => {
     if (onViewDetail) {
       onViewDetail(todo)

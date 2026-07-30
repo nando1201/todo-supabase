@@ -192,6 +192,7 @@ export const CalendarPage = ({ session }) => {
     }
   };
 
+  // Menutup modal form tugas dan mereset semua state form
   const handleCloseFormModal = () => {
     setShowFormModal(false);
     setEditingTodoId(null);
@@ -204,6 +205,7 @@ export const CalendarPage = ({ session }) => {
     setExistingFileUrl('');
   };
 
+  // Menyimpan (insert/update) data tugas ke Supabase, termasuk upload file lampiran jika ada
   const handleSubmitForm = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     try {
@@ -268,6 +270,7 @@ export const CalendarPage = ({ session }) => {
 
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
+  // Menentukan kelas warna badge berdasarkan tingkat prioritas tugas
   const getBadgeStyle = (priorityVal) => {
     switch (priorityVal?.toLowerCase()) {
       case 'high':

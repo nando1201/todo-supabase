@@ -1,4 +1,10 @@
-// Fungsi helper untuk format tanggal lokal YYYY-MM-DD yang aman dari timezone
+/**
+ * Mengubah objek Date menjadi string tanggal lokal format "YYYY-MM-DD".
+ * Sengaja tidak memakai `toISOString()` karena itu mengonversi ke UTC
+ * (bisa menggeser tanggal jika timezone user bukan UTC). Fungsi ini
+ * murni memakai getFullYear/getMonth/getDate (waktu lokal perangkat),
+ * jadi tanggal yang dihasilkan aman sesuai timezone user.
+ */
 export function getLocalDateString(dateObj) {
   const year = dateObj.getFullYear()
   const month = String(dateObj.getMonth() + 1).padStart(2, '0')
@@ -6,7 +12,15 @@ export function getLocalDateString(dateObj) {
   return `${year}-${month}-${day}`
 }
 
-// Hitung statistik tanggal (hari ini, besok, overdue, upcoming) dari daftar todos
+/**
+ * Menghitung berbagai statistik terkait tanggal dari daftar todos:
+ * - overdueTodos: jumlah tugas yang tenggatnya sudah lewat & belum selesai
+ * - todayTasksCount: jumlah tugas yang jatuh tempo hari ini
+ * - upcomingList: daftar tugas yang jatuh tempo hari ini, besok, atau
+ *   sudah terlambat (dan belum selesai) — biasanya dipakai untuk widget
+ *   "tugas mendekati deadline"
+ * Mengembalikan object berisi todayStr, tomorrowStr, dan hasil hitungan di atas.
+ */
 export function getDateStats(todos) {
   const today = new Date()
   const todayStr = getLocalDateString(today)

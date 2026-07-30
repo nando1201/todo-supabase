@@ -9,17 +9,37 @@ import Navbar from './components/Navbar'
 import {CalendarPage}  from './components/CalendarPage'
 import {CategoriesPage} from './components/CategoriesPage'
 
+/**
+ * Komponen utama aplikasi (root component).
+ * Bertugas mengatur:
+ * - Status login user (session) via Supabase Auth
+ * - Tab/halaman yang sedang aktif (dashboard, admin, calendar, dll)
+ * - Mode tampilan gelap/terang (dark mode)
+ * - Modal konfirmasi logout saat user menekan tombol "back" browser
+ */
 export default function App() {
+  // Menyimpan data session (informasi login) dari Supabase
   const [session, setSession] = useState(null)
+  // Menandai apakah aplikasi masih dalam proses pengecekan session awal
   const [loading, setLoading] = useState(true)
+  // Menyimpan tab/halaman yang sedang aktif, default: 'dashboard'
   const [currentTab, setCurrentTab] = useState('dashboard')
+  // Menampilkan/menyembunyikan modal konfirmasi logout
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
+  // Menyimpan preferensi dark mode, diambil dari localStorage (default: true/dark)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme')
     return savedTheme ? savedTheme === 'dark' : true
   })
 
+  /**
+   * Effect: Inisialisasi & memantau perubahan session login.
+   * - Saat komponen pertama kali dimuat, ambil session yang sedang aktif (jika ada).
+   * - Berlangganan (subscribe) ke perubahan status auth (login/logout) dari Supabase,
+   *   sehingga `session` selalu ter-update otomatis.
+   * - Jika session hilang (logout), tab akan direset ke 'dashboard'.
+   */
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -35,7 +55,12 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // 💡 PERBAIKAN UTAMA: PENGUNCI HISTORY BROWSER
+  /**
+   * Effect: "Menjaga" navigasi tombol back browser agar tidak langsung keluar aplikasi.
+   * - Selama user sudah login (session ada), setiap kali tombol back ditekan,
+   *   history browser akan didorong ulang (guard) dan modal konfirmasi logout ditampilkan.
+   * - Ini mencegah user tidak sengaja keluar dari aplikasi karena menekan tombol back.
+   */
   useEffect(() => {
     if (!session) return;
 
@@ -53,6 +78,11 @@ export default function App() {
     };
   }, [session]);
 
+  /**
+   * Effect: Menerapkan dark mode ke seluruh halaman.
+   * - Menambahkan/menghapus class 'dark' pada elemen <html> sesuai state isDarkMode.
+   * - Menyimpan preferensi tema ke localStorage agar tetap tersimpan saat reload.
+   */
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark')
@@ -63,17 +93,25 @@ export default function App() {
     }
   }, [isDarkMode])
 
+  /**
+   * Menjalankan proses logout setelah user menekan tombol "Ya, Keluar" pada modal.
+   * Menutup modal lalu memanggil Supabase Auth untuk sign out.
+   */
   const handleConfirmLogout = async () => {
     setShowLogoutModal(false)
     await supabase.auth.signOut()
   }
 
+  /**
+   * Membatalkan proses logout saat user menekan tombol "Batal" pada modal.
+   * Menutup modal dan mendorong ulang history browser agar guard tetap aktif.
+   */
   const handleCancelLogout = () => {
     setShowLogoutModal(false)
-    // Dorong kembali state agar tumpukan terjaga kuat
     window.history.pushState({ guard: true }, '', window.location.href)
   }
 
+  // Selama pengecekan session awal masih berjalan, tampilkan loading spinner
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F5F3ED] dark:bg-[#0B0F17] flex items-center justify-center">
@@ -82,10 +120,12 @@ export default function App() {
     )
   }
 
+  // Jika belum login (tidak ada session), tampilkan halaman Auth (login/register)
   if (!session) {
     return <Auth session={session} />
   }
 
+  // Jika sudah login, tampilkan layout utama aplikasi (Navbar + konten sesuai tab aktif)
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 relative">
       <Navbar 

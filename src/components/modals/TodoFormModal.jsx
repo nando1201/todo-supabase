@@ -1,6 +1,14 @@
 //todosformmodal.jsx
 import { X, ExternalLink, Plus, Trash2 } from 'lucide-react'
 
+/**
+ * Komponen modal form untuk membuat tugas baru ATAU mengedit tugas yang sudah ada.
+ * Mode form (buat baru / edit) ditentukan oleh ada tidaknya `editingTodoId`.
+ * Menampilkan field: judul, deskripsi, kategori, prioritas, tanggal & jam
+ * tenggat, link referensi, checklist sub-tugas, dan upload lampiran file.
+ * Seluruh state form (title, description, dst) dikontrol dari luar (controlled
+ * component), biasanya berasal dari hook `useTodos`.
+ */
 export default function TodoFormModal({
   show,
   onClose,
@@ -26,25 +34,40 @@ export default function TodoFormModal({
   setFile,
   existingFileUrl,
   uploading,
-  onSubmit, // 👈 Memanggil handleSaveTodo dari useTodos
+  onSubmit,
 }) {
+  // Guard: jangan render apa pun jika modal sedang tidak ditampilkan
   if (!show) return null
 
-  // Handler Subtask / Checklist
+  /**
+   * Menambahkan satu item checklist/sub-tugas kosong baru ke akhir daftar.
+   * ID item dibuat dari timestamp saat ini (Date.now()) agar unik.
+   */
   const handleAddChecklistItem = () => {
     setChecklist([...checklist, { id: Date.now(), text: '', completed: false }])
   }
 
+  /**
+   * Mengubah teks pada satu item checklist berdasarkan id-nya,
+   * tanpa mengubah item checklist lain.
+   * @param {number} id - ID item checklist yang diubah
+   * @param {string} text - Teks baru untuk item tersebut
+   */
   const handleChecklistChange = (id, text) => {
     setChecklist(
       checklist.map((item) => (item.id === id ? { ...item, text } : item))
     )
   }
 
+  /**
+   * Menghapus satu item checklist dari daftar berdasarkan id-nya.
+   * @param {number} id - ID item checklist yang akan dihapus
+   */
   const handleRemoveChecklistItem = (id) => {
     setChecklist(checklist.filter((item) => item.id !== id))
   }
 
+  // Fallback: jika `categoriesList` kosong/tidak valid, pakai daftar kategori default
   const safeCategories =
     Array.isArray(categoriesList) && categoriesList.length > 0
       ? categoriesList

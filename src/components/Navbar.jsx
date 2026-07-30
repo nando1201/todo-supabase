@@ -4,6 +4,7 @@ import { getDateStats } from '../utils/dateHelpers'
 import UpcomingDeadlines from './UpcomingDeadlines'
 import logo from '../assets/logo.svg'
 
+// Komponen navigasi atas (navbar): logo, menu tab, notifikasi, dan dropdown profil
 export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode, setIsDarkMode }) {
   const [profile, setProfile] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
@@ -30,6 +31,7 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
   useEffect(() => {
     if (!session?.user?.id) return
 
+    // Mengambil daftar tugas untuk keperluan notifikasi tenggat waktu
     const fetchDeadlineTodos = async () => {
       const { data, error } = await supabase
         .from('todos')
@@ -47,10 +49,10 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
 
   const { todayStr, tomorrowStr, upcomingList } = getDateStats(notifTodos)
 
+  // Menangani klik pada notifikasi tenggat waktu untuk membuka tugas terkait
   const handleNotifTodoClick = (todo) => {
     setCurrentTab('dashboard')
     setIsNotifOpen(false)
-    // Kasih waktu Dashboard buat mount/render dulu sebelum modal dibuka
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('todoapp:open-todo', { detail: { id: todo.id } }))
     }, 50)
@@ -84,6 +86,7 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
 
   // Menutup dropdown profile saat klik di luar
   useEffect(() => {
+    // Menutup dropdown ketika pengguna mengklik di luar area dropdown
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsOpen(false)
@@ -96,6 +99,7 @@ export default function Navbar({ session, currentTab, setCurrentTab, isDarkMode,
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Mengeluarkan pengguna dari sesi (sign out) melalui Supabase Auth
   const handleLogout = async () => {
     await supabase.auth.signOut()
   }

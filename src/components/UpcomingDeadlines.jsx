@@ -1,4 +1,6 @@
+// Komponen daftar tugas dengan tenggat waktu yang mendekat
 export default function UpcomingDeadlines({ upcomingList, todayStr, tomorrowStr, onTodoClick }) {
+  // Menangani klik pada salah satu item deadline
   const handleClick = (todo) => {
     if (onTodoClick) {
       onTodoClick(todo)

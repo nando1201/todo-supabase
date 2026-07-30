@@ -16,6 +16,7 @@ import {
 
 const COLORS = ['#3D5F49', '#C99A2E', '#8C6A9C', '#A83B32']
 
+// Komponen utama Panel Admin: menampilkan statistik sistem, grafik analitik, dan manajemen pengguna
 export default function AdminPanel({ session }) {
   const [usersList, setUsersList] = useState([])
   const [todos, setTodos] = useState([])
@@ -108,6 +109,7 @@ export default function AdminPanel({ session }) {
 
   const PROTECTED_EMAIL = import.meta.env.VITE_PROTECTED_EMAIL
 
+  // Mengubah peran (role) pengguna antara 'admin' dan 'user'
   const toggleRole = async (userId, currentRole, targetEmail) => {
     if (targetEmail === PROTECTED_EMAIL) {
       alert('Peran pengguna ini dikunci dan tidak dapat diubah!')
@@ -135,16 +137,19 @@ export default function AdminPanel({ session }) {
     }
   }
 
+  // Menangani perubahan input pencarian pada tabel pengguna
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value)
     setCurrentPage(1)
   }
 
+  // Menangani perubahan filter peran pada tabel pengguna
   const handleRoleChange = (e) => {
     setRoleFilter(e.target.value)
     setCurrentPage(1)
   }
 
+  // Mengubah timestamp menjadi format waktu relatif (mis. '5 menit lalu')
   const formatTimeAgo = (dateString) => {
     if (!dateString) return ''
     const seconds = Math.floor((new Date() - new Date(dateString)) / 1000)
@@ -206,6 +211,7 @@ export default function AdminPanel({ session }) {
     }
   }, [session?.user?.id])
 
+  // Mengekspor data aktivitas terbaru menjadi file CSV
   const handleExportLog = () => {
     if (!recentActivities || recentActivities.length === 0) {
       alert('Tidak ada log aktivitas untuk diexport.')
@@ -235,6 +241,7 @@ export default function AdminPanel({ session }) {
     document.body.removeChild(link)
   }
 
+  // Membersihkan local/session storage lalu memuat ulang data admin
   const handleFlushCache = async () => {
     setIsFlushing(true)
     try {
@@ -250,6 +257,7 @@ export default function AdminPanel({ session }) {
     }
   }
 
+  // Menghitung statistik jumlah tugas dibuat & diselesaikan dalam 7 hari terakhir
   const getWeeklyAnalytics = (todosList) => {
     const daysMap = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
     const today = new Date()

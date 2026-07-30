@@ -1,3 +1,4 @@
+// Komponen modal untuk menampilkan detail lengkap sebuah tugas
 export default function TodoDetailModal({ 
   isOpen, 
   onClose, 

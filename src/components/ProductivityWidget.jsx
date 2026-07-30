@@ -1,3 +1,4 @@
+// Komponen widget ringkasan produktivitas mingguan pengguna
 export default function ProductivityWidget({ progressPercent, completedTodos, streak = '5 hari' }) {
   return (
     <div className="bg-[#20302A] p-6 rounded-md text-white space-y-4">

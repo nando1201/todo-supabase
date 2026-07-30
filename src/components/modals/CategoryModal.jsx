@@ -1,4 +1,19 @@
+/**
+ * Komponen modal untuk menambahkan kategori tugas baru.
+ * - Tidak me-render apa pun (return null) jika `show` bernilai false.
+ * - Form-nya cukup sederhana: satu input nama kategori.
+ * - Saat form di-submit, memanggil `onSubmit` (biasanya `handleAddCategory`
+ *   dari hook `useTodos`) yang menangani logika penyimpanan kategori.
+ *
+ * Props:
+ * @param {boolean} show - Menentukan modal ditampilkan atau tidak
+ * @param {Function} onClose - Dipanggil saat modal ditutup (tombol × atau Batal)
+ * @param {string} newCategoryInput - Nilai input nama kategori baru
+ * @param {Function} setNewCategoryInput - Setter untuk mengubah nilai input
+ * @param {Function} onSubmit - Handler yang dijalankan saat form disubmit
+ */
 export default function CategoryModal({ show, onClose, newCategoryInput, setNewCategoryInput, onSubmit }) {
+  // Guard: jangan render apa pun jika modal sedang tidak ditampilkan
   if (!show) return null
 
   return (

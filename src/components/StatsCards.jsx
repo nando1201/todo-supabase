@@ -1,3 +1,4 @@
+// Komponen kartu-kartu ringkasan statistik tugas (progress, selesai, pending, dst)
 export default function StatsCards({ progressPercent, todayTasksCount, completedTodos, activeTodos, overdueTodos, categoriesCount }) {
   const stats = [
     { title: 'Progress %', value: `${progressPercent}%`, accent: '#3D5F49', trend: 'Total Selesai' },

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 
+// Komponen daftar aktivitas terbaru pengguna (realtime dari Supabase)
 export default function RecentActivity({ session }) {
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 🔍 Cek apakah session masuk ke komponen
     console.log("RecentActivity Session:", session)
 
     if (!session?.user?.id) {
@@ -14,6 +14,7 @@ export default function RecentActivity({ session }) {
       return
     }
 
+    // Mengambil daftar aktivitas terbaru milik pengguna dari Supabase
     const fetchActivities = async () => {
       try {
         setLoading(true)
@@ -61,7 +62,7 @@ export default function RecentActivity({ session }) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [session?.user?.id]) // 👈 Gunakan session.user.id sebagai dependency!
+  }, [session?.user?.id, session]) 
 
   // Helper Waktu Relatif
   const formatTimeAgo = (dateString) => {

@@ -1,61 +1,76 @@
-# Todo Supabase
+# TugasKu
 
-Aplikasi Todo ini dibuat dengan React dan Supabase. Aplikasi ini membantu pengguna mencatat pekerjaan, mengatur deadline, memantau prioritas, dan melihat aktivitas tugas.
+TugasKu adalah aplikasi manajemen tugas berbasis React dan Supabase. Aplikasi ini dirancang untuk membantu pengguna mencatat pekerjaan, mengatur deadline, memantau prioritas, dan melihat progres tugas secara lebih mudah.
 
 ## Tentang aplikasi
 
-Todo Supabase adalah aplikasi manajemen tugas yang memungkinkan:
+TugasKu memungkinkan pengguna untuk:
 
-- Menambahkan, mengedit, dan menghapus tugas.
-- Menetapkan kategori, prioritas, dan deadline untuk setiap tugas.
-- Menandai tugas sebagai selesai atau aktif.
-- Melihat daftar tugas dengan deadline mendekat.
-- Mengelola akun melalui autentikasi Supabase.
-- Melihat statistik tugas dan aktivitas terbaru.
-- Mengunggah lampiran file untuk tugas.
+- Mendaftar, masuk, dan keluar dengan autentikasi Supabase.
+- Menambahkan tugas baru dengan judul, deskripsi, kategori, prioritas, tanggal deadline, dan lampiran file.
+- Mengedit dan menghapus tugas yang sudah dibuat.
+- Menandai tugas sebagai selesai atau kembali aktif.
+- Melihat tugas yang deadline-nya mendekat melalui widget "Upcoming Deadlines".
+- Melihat statistik tugas seperti total tugas, selesai, aktif, dan tugas melebihi deadline.
+- Melacak aktivitas pengguna dan melihat riwayat perubahan tugas.
+- Mengelola akun pengguna dari halaman profil.
+- Mengakses Panel Admin untuk melihat data pengguna dan tugas (jika memiliki peran admin).
 
 ## Teknologi yang digunakan
 
-- React 19: library frontend untuk UI interaktif.
-- Vite: development server dan build tool cepat.
-- Tailwind CSS: utility-first styling.
-- Supabase: backend sebagai layanan untuk:
-  - Authentication (login/register)
-  - Database (penyimpanan data todos, profiles, activities)
-  - Storage (upload file tugas)
-- React Router DOM: navigasi antar halaman.
-- Recharts: grafik statistik.
-- Lucide React: ikon.
-- clsx + tailwind-merge: manajemen kelas CSS.
-- tw-animate-css: animasi tampilan ringan.
-- ESLint: pengecekan kualitas kode.
+- React 19
+- Vite
+- Tailwind CSS
+- Supabase (`@supabase/supabase-js`)
+- React Router DOM
+- Recharts
+- Lucide React
+- clsx
+- tailwind-merge
+- tw-animate-css
+- ESLint
 
 ## Fitur utama
 
 - Autentikasi pengguna (signup, signin, signout)
-- Dashboard tugas lengkap
-- Filter tugas berdasarkan kategori
-- Tambah/edit/delete tugas
-- Deadline tugas ditampilkan dalam widget "Upcoming Deadlines"
-- Statistik tugas: total, selesai, aktif, overdue
-- Upload file lampiran tugas
-- Tracking aktivitas pengguna
-- Dark mode
-- Halaman admin untuk melihat data pengguna dan tugas
-- Halaman profil untuk mengelola akun
-- Supabase Function opsional untuk email pengingat deadline
+- CRUD tugas (buat, baca, ubah, hapus)
+- Kategori tugas
+- Prioritas tugas
+- Pengaturan deadline tugas
+- Lampiran file tugas
+- Filter tugas dan pencarian
+- Widget "Upcoming Deadlines"
+- Statistik tugas dan ringkasan aktivitas
+- Halaman profil pengguna
+- Halaman admin untuk memantau pengguna dan tugas
+- Notifikasi / indikator status tugas selesai atau aktif
+- Integrasi Supabase Realtime untuk data admin
 
 ## Struktur proyek
 
-- `src/main.jsx` - entry React dan render aplikasi.
-- `src/App.jsx` - komponen utama aplikasi.
-- `src/supabaseClient.js` - inisialisasi Supabase client.
-- `src/hooks/useTodos.js` - logika fetch, CRUD, upload file, dan aktivitas.
-- `src/components/` - komponen UI seperti Navbar, Dashboard, Profile, AdminPanel, dll.
-- `src/utils/` - helper fungsi tanggal, kalender, dan statistik.
-- `supabase/functions/send-deadline-emails/index.ts` - edge function Supabase untuk email pengingat deadline.
+- `src/main.jsx` - entry point aplikasi React.
+- `src/App.jsx` - komponen utama yang mengatur routing dan state global.
+- `src/supabaseClient.js` - inisialisasi Supabase client dengan URL dan anon key.
+- `src/hooks/useTodos.js` - hooks khusus untuk mengambil data, membuat, memperbarui, dan menghapus tugas.
+- `src/components/` - kumpulan komponen UI aplikasi, seperti:
+  - `Navbar.jsx`
+  - `Dashboard.jsx`
+  - `TodoList.jsx`
+  - `TodoCard.jsx`
+  - `TodoDetailModal.jsx`
+  - `ProfilePage.jsx`
+  - `AdminPanel.jsx`
+  - `CategoriesPage.jsx`
+  - `CalendarPage.jsx`
+  - `StatsCards.jsx`
+  - `UpcomingDeadlines.jsx`
+  - `RecentActivity.jsx`
+- `src/components/modals/` - modal untuk form tugas dan kategori.
+- `src/hooks/` - custom hooks untuk logika aplikasi.
+- `src/utils/` - helper untuk tanggal, kalender, dan statistik.
+- `supabase/functions/send-deadline-emails/index.ts` - fungsi Supabase untuk mengirim email pengingat deadline.
 
-## Cara menjalankan aplikasi
+## Cara memasang dan menjalankan
 
 1. Clone repository:
 
@@ -75,8 +90,7 @@ npm install
 ```env
 VITE_SUPABASE_URL=https://<your-supabase-project>.supabase.co
 VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
-VITE_PROTECTED_EMAIL=<your-admin-email>
-VITE_RESEND_API_KEY=<your-resend-api-key>
+VITE_PROTECTED_EMAIL=<admin-email-yang-dikunci>
 ```
 
 4. Jalankan development server:
@@ -85,37 +99,33 @@ VITE_RESEND_API_KEY=<your-resend-api-key>
 npm run dev
 ```
 
-5. Buka browser ke:
+5. Buka browser:
 
 ```bash
 http://localhost:5173
 ```
 
-## Build produksi
+## Skrip npm
 
-```bash
-npm run build
-```
+- `npm run dev` - jalankan server development.
+- `npm run build` - build produksi.
+- `npm run preview` - preview hasil build.
+- `npm run lint` - jalankan ESLint.
 
-Preview hasil build:
+## Supabase Function (opsional)
 
-```bash
-npm run preview
-```
+TugasKu menyediakan fungsi Supabase untuk mengirim email pengingat tugas yang deadline-nya hari ini.
 
-## Supabase Function untuk email deadline
-
-Aplikasi ini juga menyediakan fungsi Supabase untuk mengirim email pengingat otomatis jika tugas memiliki deadline hari ini.
-
-### File fungsi
+### Lokasi fungsi
 
 - `supabase/functions/send-deadline-emails/index.ts`
 
 ### Environment variables untuk fungsi
 
-- `RESEND_API_KEY`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
+- `GMAIL_USER` - alamat Gmail pengirim.
+- `GMAIL_APP_PASS` - app password Gmail.
+- `SUPABASE_URL` - URL Supabase.
+- `SUPABASE_SERVICE_ROLE_KEY` - service role key Supabase.
 
 ### Menjalankan fungsi lokal
 
@@ -123,35 +133,22 @@ Aplikasi ini juga menyediakan fungsi Supabase untuk mengirim email pengingat oto
 supabase functions serve send-deadline-emails
 ```
 
-### Menjadwalkan email otomatis
-
-1. Deploy fungsi ke Supabase:
+### Deploy fungsi
 
 ```bash
 supabase functions deploy send-deadline-emails
 ```
 
-2. Buat scheduler Supabase atau cron job eksternal untuk memanggil endpoint fungsi sekali sehari.
+### Menjadwalkan pengiriman email
 
-## Tips penggunaan
-
-- Gunakan form tugas untuk memasukkan judul, deskripsi, kategori, prioritas, dan tanggal deadline.
-- Periksa widget `Upcoming Deadlines` untuk melihat tugas yang harus segera diselesaikan.
-- Gunakan fitur admin untuk memantau data pengguna dan tugas.
-- Gunakan halaman profil untuk memperbarui data akun.
+Gunakan scheduler Supabase atau cron job eksternal untuk memanggil endpoint fungsi sekali sehari.
 
 ## Catatan penting
 
-- Jangan commit file `.env` ke GitHub.
-- Pastikan tabel Supabase (`todos`, `profiles`, `activities`) sudah dikonfigurasi sesuai kebutuhan aplikasi.
-- Variabel `VITE_PROTECTED_EMAIL` dan `VITE_RESEND_API_KEY` hanya dibutuhkan jika menggunakan fitur email atau admin.
+- Jangan commit file `.env` ke Git.
+- Pastikan tabel Supabase `todos`, `profiles`, dan `activities` sudah dibuat.
+- `VITE_PROTECTED_EMAIL` berguna untuk mengunci perubahan peran admin tertentu.
 
-## Pengembangan lanjutan
+## Ringkasannya
 
-Beberapa fitur yang bisa ditambahkan:
-
-- reminder email yang terjadwal otomatis setiap hari
-- push notification browser
-- tampilan mobile responsive lebih baik
-- laporan mingguan tugas
-- sistem prioritas dan pengelompokan tugas lebih lengkap
+TugasKu adalah aplikasi Todo lengkap dengan autentikasi, manajemen tugas, statistik, dan admin panel. Aplikasi ini cocok untuk belajar React + Supabase dan sebagai basis untuk dikembangkan menjadi sistem task management yang lebih lengkap.
