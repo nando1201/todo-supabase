@@ -14,6 +14,10 @@ export default function TodoDetailModal({
   const description = todo.description || todo.deskripsi
   const fileUrl = todo.file_url || todo.lampiran || todo.file || todo.attachment
   
+  // Ekstraksi Kategori dan Prioritas
+  const category = todo.category || todo.kategori || 'Umum'
+  const priority = todo.priority || todo.prioritas || 'Medium'
+
   // Ekstraksi Link Referensi
   const rawLink = todo.reference_link || todo.reference_url || todo.url || todo.link || todo.url_link || todo.link_url || todo.link_reference
   const reference_link = (typeof rawLink === 'string' && rawLink.trim() !== '') ? rawLink.trim() : null
@@ -28,6 +32,19 @@ export default function TodoDetailModal({
   const completedChecklist = checklistItems.filter(
     item => item.is_completed || item.completed || item.status === 'Selesai'
   ).length
+
+  // Helper Warna/Badge untuk Prioritas
+  const getPriorityBadge = (p) => {
+    const val = String(p).toLowerCase()
+    if (val === 'high' || val === 'tinggi') {
+      return 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border-red-200 dark:border-red-800'
+    }
+    if (val === 'low' || val === 'rendah') {
+      return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+    }
+    // Default Medium / Sedang
+    return 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+  }
 
   // Handler klik tombol Edit -> Langsung Tutup Modal Detail & Buka Form Edit
   const handleEditClick = () => {
@@ -57,6 +74,20 @@ export default function TodoDetailModal({
 
         {/* BODY MODAL */}
         <div className="space-y-4">
+          
+          {/* BADGE KATEGORI & PRIORITAS */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Kategori */}
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-[#2A2823] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              📁 {category}
+            </span>
+
+            {/* Prioritas */}
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold border ${getPriorityBadge(priority)}`}>
+              ⚡ Prioritas: {priority}
+            </span>
+          </div>
+
           {/* JUDUL */}
           <div>
             <label className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Judul Tugas</label>

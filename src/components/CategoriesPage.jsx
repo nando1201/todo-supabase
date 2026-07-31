@@ -166,31 +166,48 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
     setShowFormModal(false)
   }
 
-  // Submit Form Tugas
+
+// Submit Form Tugas
   const handleSubmitForm = async (e) => {
     e.preventDefault()
     try {
-      setUploading(true)
-      let uploadedFileUrl = existingFileUrl
+      setUploading(true) // Mulai loading total form
 
-      if (file) {
+      // 1. Definisikan fungsi uploadAttachment di sini (atau di luar handleSubmitForm)
+      const uploadAttachment = async () => {
+        if (!file) return existingFileUrl // Jika tidak ada file baru, kembalikan URL lama (bisa '' atau url)
+
+        // Tidak perlu setUploading(true) di sini karena sudah diset di awal handleSubmitForm
         const fileExt = file.name.split('.').pop()
-        const fileName = `${Math.random()}.${fileExt}`
-        const filePath = `${session?.user?.id || 'public'}/${fileName}`
+        // Menggunakan folder berdasarkan user_id agar rapi
+        const fileName = `${session.user.id}/${Date.now()}.${fileExt}`
 
         const { error: uploadError } = await supabase.storage
-          .from('attachments')
-          .upload(filePath, file)
+          .from('todo-files') // <--- PASTIKAN NAMA BUCKET INI KONSISTEN
+          .upload(fileName, file)
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          throw new Error('Gagal mengunggah file: ' + uploadError.message)
+        }
 
         const { data: publicUrlData } = supabase.storage
-          .from('attachments')
-          .getPublicUrl(filePath)
-
-        uploadedFileUrl = publicUrlData.publicUrl
+          .from('todo-files')
+          .getPublicUrl(fileName)
+        return publicUrlData.publicUrl
       }
 
+      // 2. Jalankan proses upload file terlebih dahulu
+      let uploadedFileUrl = ''
+      try {
+        uploadedFileUrl = await uploadAttachment()
+      } catch (uploadError) {
+        // Jika upload file gagal, hentikan proses simpan tugas
+        console.error(uploadError)
+        alert(uploadError.message)
+        return // Keluar dari handleSubmitForm
+      }
+
+      // 3. Siapkan payload data tugas dengan URL file yang sudah didapat
       const payload = {
         title,
         description,
@@ -200,10 +217,11 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
         due_time: due_time || null,
         reference_link: reference_link || null,
         checklist,
-        file_url: uploadedFileUrl,
+        file_url: uploadedFileUrl, // URL file hasil upload (atau url lama/kosong jika tidak upload)
         user_id: session?.user?.id || null,
       }
 
+      // 4. Simpan data tugas ke tabel 'todos'
       if (editingTodoId) {
         const { error } = await supabase
           .from('todos')
@@ -217,15 +235,18 @@ export const CategoriesPage = ({ session, categoriesList: initialCategories = ['
         if (error) throw error
       }
 
+      // 5. Refresh data dan tutup modal
       await fetchData()
       handleCloseFormModal()
     } catch (err) {
       console.error('Gagal menyimpan tugas:', err)
-      alert('Terjadi kesalahan saat menyimpan tugas.')
+      alert('Terjadi kesalahan saat menyimpan tugas: ' + err.message)
     } finally {
-      setUploading(false)
+      setUploading(false) 
     }
   }
+
+
 
   const getCategoryColor = (index) => {
     const colors = [
