@@ -75,7 +75,7 @@ TugasKu memungkinkan pengguna untuk:
 1. Clone repository:
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/nando1201/todo-supabase
 cd todo-supabase
 ```
 
